@@ -1,5 +1,6 @@
 package pl.kitek.buk.data.repository
 
+import io.reactivex.Maybe
 import io.reactivex.Single
 import pl.kitek.buk.data.model.Book
 import pl.kitek.buk.data.model.BookEntity
@@ -10,6 +11,14 @@ class InMemoryBookRepository(
     private val bookServiceFactory: BookRestServiceFactory,
     private val settingsRepository: SettingsRepository
 ) : BookRepository {
+
+    override fun getBook(id: String): Maybe<Book> {
+        return getBooks().flatMapMaybe { page ->
+            val book = page.items.firstOrNull { item -> item.id == id }
+
+            Maybe.just(book)
+        }
+    }
 
     override fun getBooks(): Single<Page<Book>> {
         val bookFactory = BookFactory(settingsRepository)

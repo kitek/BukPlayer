@@ -11,22 +11,30 @@
         tools:layout="@layout/shelf_fragment"
         android:name="pl.kitek.buk.presentation.shelf.ShelfFragment"
         android:label="@string/app_name">
+
         <action android:id="@+id/action_shelfFragment_to_settingsFragment" app:destination="@id/settingsFragment"/>
+
+        <action android:id="@+id/action_shelfFragment_to_playerFragment" app:destination="@id/playerFragment"/>
+
     </fragment>
 
     <fragment
-        android:id="@+id/bookFragment"
-        android:name="pl.kitek.buk.presentation.book.BookFragment"
-        android:label="BookFragment"/>
-
-    <fragment
         android:id="@+id/playerFragment"
-        android:name="pl.kitek.buk.presentation.player.PlayerFragment"
-        android:label="PlayerFragment"/>
+        tools:layout="@layout/player_fragment"
+        android:name="pl.kitek.buk.presentation.player.PlayerFragment">
+
+        <argument android:name="bookId" app:argType="string"/>
+
+    </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"
         android:name="pl.kitek.buk.presentation.settings.SettingsFragment"
         android:label="SettingsFragment"/>
+
+    <fragment
+        android:id="@+id/bookFragment"
+        android:name="pl.kitek.buk.presentation.book.BookFragment"
+        android:label="BookFragment"/>
 
 </navigation>

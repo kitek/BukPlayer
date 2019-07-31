@@ -11,7 +11,9 @@ import pl.kitek.buk.R
 import pl.kitek.buk.common.loadImage
 import pl.kitek.buk.data.model.Book
 
-class ShelfAdapter : RecyclerView.Adapter<ShelfAdapter.ShelfViewHolder>() {
+class ShelfAdapter(
+    private var clickListener: OnBookClickListener? = null
+) : RecyclerView.Adapter<ShelfAdapter.ShelfViewHolder>(), View.OnClickListener {
 
     var items: List<Book> = emptyList()
         set(value) {
@@ -21,6 +23,7 @@ class ShelfAdapter : RecyclerView.Adapter<ShelfAdapter.ShelfViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShelfViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.shelf_item, parent, false)
+        itemView.setOnClickListener(this)
 
         return ShelfViewHolder(
             itemView.bookItemImage,
@@ -37,6 +40,12 @@ class ShelfAdapter : RecyclerView.Adapter<ShelfAdapter.ShelfViewHolder>() {
 
     override fun getItemCount(): Int = items.size
 
+    override fun onClick(v: View?) {
+        val book = v?.tag as? Book? ?: return
+
+        clickListener?.onBookClick(book)
+    }
+
     class ShelfViewHolder(
         private val bookItemImage: ImageView,
         private val bookItemTitle: TextView,
@@ -48,6 +57,12 @@ class ShelfAdapter : RecyclerView.Adapter<ShelfAdapter.ShelfViewHolder>() {
             bookItemImage.loadImage(book.coverPath)
             bookItemTitle.text = book.title
             bookItemAuthor.text = book.author
+
+            itemView.tag = book
         }
+    }
+
+    interface OnBookClickListener {
+        fun onBookClick(book: Book)
     }
 }

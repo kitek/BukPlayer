@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.preference.EditTextPreference
+        app:key="serverURL"
+        app:summary="@string/server_url_description"
+        app:title="@string/server_url"/>
+
+</androidx.preference.PreferenceScreen>

@@ -1,0 +1,64 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'androidx.navigation.safeargs.kotlin'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.1"
+    defaultConfig {
+        applicationId "pl.kitek.buk"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            useProguard true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kt"
+    implementation "androidx.appcompat:appcompat:$appcompat"
+    implementation "androidx.core:core-ktx:$coreKtx"
+    implementation "com.google.android.material:material:$materialComponents"
+    implementation "androidx.preference:preference-ktx:$preferences"
+    implementation "android.arch.lifecycle:viewmodel:$viewModel"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroid"
+    implementation "io.reactivex.rxjava2:rxjava:$rxJava"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle"
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle"
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigation"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigation"
+    implementation "org.koin:koin-android:$koin"
+    implementation "org.koin:koin-androidx-viewmodel:$koin"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit"
+    implementation "com.jakewharton.retrofit:retrofit2-rxjava2-adapter:$rxRetrofit"
+    implementation "com.squareup.retrofit2:converter-moshi:$moshi"
+    implementation "com.squareup.moshi:moshi-adapters:$moshiAdapters"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttpLogger"
+    implementation "com.squareup.picasso:picasso:$picasso"
+    implementation "com.jakewharton.timber:timber:$timber"
+
+    testImplementation "junit:junit:$junit"
+
+    androidTestImplementation "androidx.test:runner:$uiTestRunner"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso"
+
+}

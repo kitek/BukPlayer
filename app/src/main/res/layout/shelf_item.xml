@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="RtlHardcoded"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/bookItemImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:src="@tools:sample/avatars"
+        tools:ignore="ContentDescription"/>
+
+    <TextView
+        android:id="@+id/bookItemTitle"
+        android:layout_toRightOf="@+id/bookItemImage"
+        tools:text="Around the World in Eighty Days"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/bookItemAuthor"
+        tools:text="@tools:sample/full_names"
+        android:layout_below="@+id/bookItemTitle"
+        android:layout_toRightOf="@+id/bookItemImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</RelativeLayout>

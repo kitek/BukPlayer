@@ -9,6 +9,7 @@ import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
 import kotlinx.android.synthetic.main.activity_main.*
 import pl.kitek.buk.R
+import pl.kitek.buk.common.NotificationHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        NotificationHelper.setupChannel(this)
         setSupportActionBar(toolbar)
 
         val navController = findNavController(R.id.navHostFragment)

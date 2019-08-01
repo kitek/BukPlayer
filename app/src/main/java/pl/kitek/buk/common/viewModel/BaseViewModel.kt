@@ -5,10 +5,10 @@ import io.reactivex.disposables.CompositeDisposable
 
 abstract class BaseViewModel : ViewModel() {
 
-    protected val subscription = CompositeDisposable()
+    protected val disposable = CompositeDisposable()
 
     override fun onCleared() {
         super.onCleared()
-        subscription.clear()
+        disposable.clear()
     }
 }

@@ -27,7 +27,7 @@ class ShelfViewModel(
                 this.books.value = books.items
             }, {
 
-            }).addTo(subscription)
+            }).addTo(disposable)
     }
 
 }

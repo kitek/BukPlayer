@@ -40,7 +40,7 @@ object NotificationHelper {
         val intent = Intent()
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
-        val largeIconBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+        val largeIconBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_stat_audiobook)
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
         val bigTextStyle = NotificationCompat.BigTextStyle()
         bigTextStyle.setBigContentTitle(title)
@@ -48,7 +48,7 @@ object NotificationHelper {
 
         builder.setStyle(bigTextStyle)
         builder.setWhen(System.currentTimeMillis())
-        builder.setSmallIcon(R.mipmap.ic_launcher)
+        builder.setSmallIcon(R.drawable.ic_stat_audiobook)
         builder.setLargeIcon(largeIconBitmap)
         builder.priority = NotificationCompat.PRIORITY_DEFAULT
         builder.setFullScreenIntent(pendingIntent, true)

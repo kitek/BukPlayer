@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.IBinder
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -132,21 +133,31 @@ class PlayerService : Service() {
 
         fun play(bookId: String, context: Context) {
             val intent = createPlayIntent(bookId, context)
-            context.startService(intent)
+
+            startService(context, intent)
         }
 
         fun pause(context: Context) {
             val intent = Intent(context, PlayerService::class.java)
             intent.action = ACTION_PAUSE
 
-            context.startService(intent)
+            startService(context, intent)
         }
 
         fun stop(context: Context) {
             val intent = Intent(context, PlayerService::class.java)
             intent.action = ACTION_STOP
 
-            context.startService(intent)
+            startService(context, intent)
         }
+
+        private fun startService(context: Context, intent: Intent) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
+
     }
 }

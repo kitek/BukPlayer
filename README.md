@@ -18,3 +18,7 @@ Steps:
 
 - Android 5+
 - Internet connection
+
+### Attribution
+
+Launcher icon made by Freepik from www.flaticon.com

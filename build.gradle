@@ -22,6 +22,7 @@ buildscript {
         moshiAdapters = '1.8.0'
         okhttpLogger = '3.12.1'
         picasso = '2.5.2'
+        exoPlayer = '2.10.3'
 
         junit = '4.12'
         uiTestRunner = '1.2.0'

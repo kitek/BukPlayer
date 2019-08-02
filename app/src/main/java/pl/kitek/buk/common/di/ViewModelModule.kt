@@ -8,6 +8,6 @@ import pl.kitek.buk.presentation.shelf.ShelfViewModel
 val viewModelModule = module {
 
     viewModel { ShelfViewModel(get()) }
-    viewModel { (bookId: String) -> PlayerViewModel(bookId, get()) }
+    viewModel { (bookId: String) -> PlayerViewModel(bookId, get(), get()) }
 
 }

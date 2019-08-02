@@ -25,6 +25,12 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".data.service.player.PlayerService"
+            android:exported="false"
+            android:description="@string/service_description"/>
+
+
     </application>
 
 </manifest>

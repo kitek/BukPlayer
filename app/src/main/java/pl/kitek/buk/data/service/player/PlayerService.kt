@@ -1,5 +1,6 @@
 package pl.kitek.buk.data.service.player
 
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -15,14 +16,17 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import org.koin.android.ext.android.inject
 import pl.kitek.buk.R
 import pl.kitek.buk.common.NotificationHelper
 import pl.kitek.buk.common.addTo
 import pl.kitek.buk.data.model.BookFile
+import pl.kitek.buk.data.model.BookProgress
 import pl.kitek.buk.data.model.Page
 import pl.kitek.buk.data.repository.BookRepository
 import timber.log.Timber
@@ -36,6 +40,8 @@ class PlayerService : Service() {
     private var dataSourceFactory: DefaultDataSourceFactory? = null
     private var bookFiles: Page<BookFile>? = null
     private var currentBookId: String = ""
+    private var playbackPosition: Long = 0
+    private var windowIndex: Int = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -73,17 +79,48 @@ class PlayerService : Service() {
             return
         }
 
-        bookRepository.getBook(bookId)
-            .flatMap { book -> bookRepository.getBookFiles(book.path).toMaybe() }
-            .subscribeOn(Schedulers.io())
+        Single.zip(
+            getProgress(bookId), getBookFiles(bookId),
+            zipFunc()
+        ).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ bookFiles ->
+            .subscribe({ (progress, bookFiles) ->
                 this.bookFiles = bookFiles
                 this.currentBookId = bookId
+                this.playbackPosition = progress.playbackPosition
+                this.windowIndex = progress.currentWindowIndex
                 startPlaying(bookFiles)
-            }, {
-                Timber.tag("PlayerService").e("error: $it ")
+            }, { e: Throwable ->
+                Timber.tag(TAG).e("PlayerService error: $e ")
             }).addTo(disposable)
+    }
+
+    private fun zipFunc(): BiFunction<BookProgress, Page<BookFile>, Pair<BookProgress, Page<BookFile>>> {
+        return BiFunction { progress: BookProgress, book ->
+            Pair(
+                progress,
+                book
+            )
+        }
+    }
+
+    private fun getBookFiles(bookId: String): Single<Page<BookFile>> {
+        return bookRepository.getBook(bookId)
+            .toSingle()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .flatMap { book ->
+                bookRepository.getBookFiles(book.path)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+            }
+    }
+
+    private fun getProgress(bookId: String): Single<BookProgress> {
+        return bookRepository.getProgress(bookId)
+            .toSingle(BookProgress(bookId, 0L, 0))
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun startPlaying(bookFiles: Page<BookFile>) {
@@ -97,10 +134,17 @@ class PlayerService : Service() {
         val mediaSource = ConcatenatingMediaSource(*sources)
         player?.prepare(mediaSource)
         player?.playWhenReady = true
+
+        player?.seekTo(windowIndex, playbackPosition)
     }
 
     private fun pausePlaying() {
         player?.playWhenReady = false
+
+        this.playbackPosition = player?.currentPosition ?: 0L
+        this.windowIndex = player?.currentWindowIndex ?: 0
+
+        saveProgress()
     }
 
     private fun stopPlaying() {
@@ -109,19 +153,40 @@ class PlayerService : Service() {
     }
 
     override fun onDestroy() {
+        saveProgress()
+
         player?.stop()
         player?.release()
         player = null
+
+        disposable.dispose()
+    }
+
+    @SuppressLint("CheckResult")
+    private fun saveProgress() {
+        val playbackPosition = player?.currentPosition ?: 0L
+        val currentWindow = player?.currentWindowIndex ?: 0
+
+        bookRepository.setProgress(currentBookId, playbackPosition, currentWindow)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                Timber.tag(TAG).d("Progress saved at $playbackPosition/$currentWindow")
+            }, {
+                Timber.tag(TAG).e("Progress saving error: $it")
+            })
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
+
         const val ACTION_PLAY = "ACTION_PLAY"
         const val ACTION_PAUSE = "ACTION_PAUSE"
         const val ACTION_STOP = "ACTION_STOP"
 
         private const val BOOK_ID = "bookId"
+        private const val TAG = "PlayerService"
 
         fun createPlayIntent(bookId: String, context: Context): Intent {
             val intent = Intent(context, PlayerService::class.java)

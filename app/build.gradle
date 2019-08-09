@@ -54,6 +54,8 @@ dependencies {
     implementation "com.squareup.moshi:moshi-adapters:$moshiAdapters"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttpLogger"
     implementation "com.squareup.picasso:picasso:$picasso"
+    implementation "com.jakewharton.picasso:picasso2-okhttp3-downloader:$picassoDownloader"
+    implementation "com.google.android.exoplayer:extension-okhttp:$exoPlayer"
     implementation "com.google.android.exoplayer:exoplayer-core:$exoPlayer"
     implementation "com.jakewharton.timber:timber:$timber"
 

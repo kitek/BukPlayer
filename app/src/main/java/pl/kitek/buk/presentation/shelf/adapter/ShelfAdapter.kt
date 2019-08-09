@@ -12,7 +12,7 @@ import pl.kitek.buk.common.loadImage
 import pl.kitek.buk.data.model.Book
 
 class ShelfAdapter(
-    private var clickListener: OnBookClickListener? = null
+    private val clickListener: OnBookClickListener? = null
 ) : RecyclerView.Adapter<ShelfAdapter.ShelfViewHolder>(), View.OnClickListener {
 
     var items: List<Book> = emptyList()
@@ -20,6 +20,7 @@ class ShelfAdapter(
             field = value
             notifyDataSetChanged()
         }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShelfViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.shelf_item, parent, false)

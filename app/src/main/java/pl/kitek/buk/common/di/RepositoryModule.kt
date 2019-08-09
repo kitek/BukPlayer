@@ -12,6 +12,6 @@ val repositoryModule = module {
 
     single<SettingsRepository> { SharedPrefSettingsRepository(get()) }
     single<BookRepository> { InMemoryBookRepository(get(), get()) }
-    single<PlayerController> { BukPlayerController(get()) }
+
 
 }

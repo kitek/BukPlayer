@@ -6,10 +6,10 @@ import pl.kitek.buk.data.model.*
 class BookFactory(private val settingsRepository: SettingsRepository) {
 
     fun mapToBooks(entities: Page<BookEntity>): Single<Page<Book>> {
-        return settingsRepository.getServerUrl().map { baseUrl ->
+        return settingsRepository.getServerSettings().map { settings ->
             val books = entities.items.map { entity ->
-                val path = createAbsoluteUrl(entity.path, baseUrl)
-                val coverPath = createAbsoluteUrl(entity.coverPath, baseUrl)
+                val path = createAbsoluteUrl(entity.path, settings.url)
+                val coverPath = createAbsoluteUrl(entity.coverPath, settings.url)
 
                 Book(entity.id, entity.title, entity.author, path, entity.description, coverPath)
             }
@@ -19,9 +19,9 @@ class BookFactory(private val settingsRepository: SettingsRepository) {
     }
 
     fun mapToBookFiles(entities: Page<BookFileEntity>): Single<Page<BookFile>> {
-        return settingsRepository.getServerUrl().map { baseUrl ->
+        return settingsRepository.getServerSettings().map { settings ->
             val files = entities.items.map { entity ->
-                BookFile(createAbsoluteUrl(entity.path, baseUrl))
+                BookFile(createAbsoluteUrl(entity.path, settings.url))
             }
 
             Page(entities.metadata, files)
@@ -29,6 +29,10 @@ class BookFactory(private val settingsRepository: SettingsRepository) {
     }
 
     private fun createAbsoluteUrl(path: String, baseUrl: String): String {
-        return if (path.startsWith("http")) path else "$baseUrl$path"
+        return when {
+            path.isEmpty() -> ""
+            path.startsWith("http") -> path
+            else -> "$baseUrl$path"
+        }
     }
 }

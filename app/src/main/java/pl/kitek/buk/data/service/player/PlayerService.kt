@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.IBinder
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.MediaSource
@@ -21,15 +22,20 @@ import io.reactivex.schedulers.Schedulers
 import org.koin.android.ext.android.inject
 import pl.kitek.buk.R
 import pl.kitek.buk.common.NotificationHelper
+import pl.kitek.buk.common.OkHttpClientFactory
 import pl.kitek.buk.common.addTo
 import pl.kitek.buk.data.model.BookFile
 import pl.kitek.buk.data.model.Page
 import pl.kitek.buk.data.repository.BookRepository
+import pl.kitek.buk.data.repository.SettingsRepository
 import timber.log.Timber
 
 class PlayerService : Service() {
 
     private val bookRepository: BookRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
+    private val httpClientFactory: OkHttpClientFactory by inject()
+
     private val disposable = CompositeDisposable()
 
     private var player: SimpleExoPlayer? = null
@@ -45,7 +51,15 @@ class PlayerService : Service() {
     private fun setupPlayer() {
         val userAgent = Util.getUserAgent(this, resources.getString(R.string.app_name))
         player = ExoPlayerFactory.newSimpleInstance(this, AudioOnlyRenderersFactory(this), DefaultTrackSelector())
-        dataSourceFactory = DefaultDataSourceFactory(this, userAgent)
+
+        Timber.tag("kitek").d("httpClientFactory: ${httpClientFactory.client} ")
+
+
+        dataSourceFactory = DefaultDataSourceFactory(
+            this,
+            null,
+            OkHttpDataSourceFactory(httpClientFactory.client, userAgent)
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -104,7 +118,11 @@ class PlayerService : Service() {
     }
 
     private fun stopPlaying() {
-        stopForeground(true)
+        try {
+            stopForeground(true)
+        } catch (e: Exception) {
+            Timber.tag("kitek").e("stopPlaying: $e ")
+        }
         stopSelf()
     }
 
@@ -149,6 +167,7 @@ class PlayerService : Service() {
             intent.action = ACTION_STOP
 
             startService(context, intent)
+//            context.startService(intent)
         }
 
         private fun startService(context: Context, intent: Intent) {

@@ -28,11 +28,20 @@ android {
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
+        }
+    }
 }
 
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    kapt "androidx.room:room-compiler:$room"
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kt"
     implementation "androidx.appcompat:appcompat:$appcompat"
@@ -43,7 +52,6 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxandroid:$rxAndroid"
     implementation "io.reactivex.rxjava2:rxjava:$rxJava"
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle"
-    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle"
     implementation "androidx.navigation:navigation-fragment-ktx:$navigation"
     implementation "androidx.navigation:navigation-ui-ktx:$navigation"
     implementation "org.koin:koin-android:$koin"
@@ -57,10 +65,14 @@ dependencies {
     implementation "com.jakewharton.picasso:picasso2-okhttp3-downloader:$picassoDownloader"
     implementation "com.google.android.exoplayer:extension-okhttp:$exoPlayer"
     implementation "com.google.android.exoplayer:exoplayer-core:$exoPlayer"
+    implementation "androidx.room:room-runtime:$room"
+    implementation "androidx.room:room-ktx:$room"
+    implementation "android.arch.persistence.room:rxjava2:$room"
     implementation "com.jakewharton.timber:timber:$timber"
 
     testImplementation "junit:junit:$junit"
 
+    androidTestImplementation "androidx.room:room-testing:$room"
     androidTestImplementation "androidx.test:runner:$uiTestRunner"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso"
 

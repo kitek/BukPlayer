@@ -1,18 +1,22 @@
 package pl.kitek.buk.data.repository
 
+import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import pl.kitek.buk.data.db.BookDao
 import pl.kitek.buk.data.model.Book
 import pl.kitek.buk.data.model.BookFile
+import pl.kitek.buk.data.model.BookProgress
 import pl.kitek.buk.data.model.Page
 import pl.kitek.buk.data.service.BookRestServiceFactory
 
 class InMemoryBookRepository(
     private val bookServiceFactory: BookRestServiceFactory,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val bookDao: BookDao
 ) : BookRepository {
 
     private val bookFactory = BookFactory(settingsRepository)
@@ -55,5 +59,13 @@ class InMemoryBookRepository(
         return bookServiceFactory.create()
             .flatMap { service -> service.getBookFiles(path) }
             .flatMap { entities -> bookFactory.mapToBookFiles(entities) }
+    }
+
+    override fun getProgress(bookId: String): Maybe<BookProgress> {
+        return bookDao.getProgress(bookId)
+    }
+
+    override fun setProgress(bookId: String, playbackPosition: Long, currentWindowIndex: Int): Completable {
+        return bookDao.saveProgress(BookProgress(bookId, playbackPosition, currentWindowIndex))
     }
 }

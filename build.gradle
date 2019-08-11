@@ -24,6 +24,7 @@ buildscript {
         picasso = '2.5.2'
         picassoDownloader = '1.1.0'
         exoPlayer = '2.10.3'
+        room = '2.2.0-alpha01'
 
         junit = '4.12'
         uiTestRunner = '1.2.0'

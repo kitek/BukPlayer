@@ -6,12 +6,13 @@ const getMP3Duration = require('get-mp3-duration');
 const readlineSync = require('readline-sync');
 
 const indexFilePath = '.' + path.sep + 'index.json';
+const audioExts = ['.mp3', '.ogg'];
 
 module.exports = {
 
     findBooks: async (dir = '.') => {
         console.log('Scanning directories...');
-        const files = walk(dir, ['.mp3', '.jpg', '.png']);
+        const files = walk(dir, ['.mp3', '.ogg', '.jpg', '.png']);
         const books = await mapToBooks(files);
         const savedBooks = getSavedBooks();
         const diff = calcBooksDiff(books, savedBooks);
@@ -29,6 +30,7 @@ module.exports = {
     },
 
     saveBooks: (books) => {
+        console.log('Saving book...');
         const model = {
             'metadata': {
                 'total': (books || []).length,
@@ -76,8 +78,8 @@ async function mapToBooks(files) {
         }) || '';
 
         const id = crypto.createHash('md5').update(name).digest("hex");
-        const hashedFolder = await hashElement(name, { files: { include: ['.mp3', '.jpg', '.png'] }});
-        const durationInSeconds = getDuration(dirNames[name].filter(isMp3));
+        const hashedFolder = await hashElement(name, { files: { include: ['.mp3', '.ogg', '.jpg', '.png'] }});
+        const durationInSeconds = getDuration(dirNames[name].filter(isAudioFile));
 
         const book = {
             id: crypto.createHash('md5').update(name).digest("hex"),
@@ -87,7 +89,7 @@ async function mapToBooks(files) {
             hash: hashedFolder.hash,
             description: "",
             coverPath: coverLocalPath.replace('.' + path.sep, ''),
-            filesCount: dirNames[name].filter(isMp3).length,
+            filesCount: dirNames[name].filter(isAudioFile).length,
             durationInSeconds: durationInSeconds
         };
 
@@ -97,8 +99,8 @@ async function mapToBooks(files) {
     return books;
 }
 
-function isMp3(item) {
-    return path.extname(item) === '.mp3'
+function isAudioFile(item) {
+    return audioExts.includes(path.extname(item))
 }
 
 function walk(dir, filterExt = []) {
@@ -107,7 +109,7 @@ function walk(dir, filterExt = []) {
 
     list.forEach(function(file) {
         file = dir + path.sep + file;
-        const stat = fs.statSync(file);
+        const stat = fs.lstatSync(file);
         if (stat && stat.isDirectory()) {
             results = results.concat(walk(file, filterExt));
         } else {
@@ -184,7 +186,7 @@ function removeFromIndex(books) {
 }
 
 function saveBooksFiles(books) {
-    const paths = books.map((book) => '.' + path.sep + book.path).map((path) => walk(path, ['.mp3']));
+    const paths = books.map((book) => '.' + path.sep + book.path).map((path) => walk(path, audioExts));
     paths.forEach((files) => {
         const model = {
             'metadata': {

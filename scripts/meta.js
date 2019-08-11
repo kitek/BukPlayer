@@ -58,9 +58,16 @@ async function getCoverPath(book, proposal) {
     if(book.coverPath.length > 0) return book.coverPath;
 
     try {
-        const coverPath = proposal.find((item) => {
+        let coverPath = (proposal.find((item) => {
             return item.coverPath.length > 0 && (item.title === book.title);
-        }).coverPath || '';
+        }) || {}).coverPath || '';
+
+        if(coverPath.length === 0) {
+            // try find cover using author
+            coverPath = (proposal.find((item) => {
+                return item.coverPath.length > 0 && (item.author === book.author);
+            }) || {}).coverPath || '';
+        }
 
         if(coverPath.length === 0) return '';
 
@@ -73,6 +80,7 @@ async function getCoverPath(book, proposal) {
 
         return coverRelativePath;
     } catch(e) {
+        console.error('getCoverPath', e);
         return '';
     }
 }

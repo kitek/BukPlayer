@@ -3,18 +3,18 @@ package pl.kitek.buk.data.service.player
 import android.content.Context
 
 class BukPlayerController(
-    private val context: Context
+    private val applicationContext: Context
 ) : PlayerController {
 
     override fun play(bookId: String) {
-        PlayerService.play(bookId, context)
+        PlayerService.play(bookId, applicationContext)
     }
 
     override fun pause() {
-        PlayerService.pause(context)
+        PlayerService.pause(applicationContext)
     }
 
     override fun stop() {
-        PlayerService.stop(context)
+        PlayerService.stop(applicationContext)
     }
 }

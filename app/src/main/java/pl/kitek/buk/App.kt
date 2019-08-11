@@ -1,9 +1,9 @@
 package pl.kitek.buk
 
 import android.app.Application
-import android.os.StrictMode
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import pl.kitek.buk.common.di.androidModule
 import pl.kitek.buk.common.di.networkModule
 import pl.kitek.buk.common.di.repositoryModule
 import pl.kitek.buk.common.di.viewModelModule
@@ -17,7 +17,7 @@ class App : Application() {
         enableDebug()
         startKoin {
             androidContext(this@App)
-            modules(listOf(networkModule, repositoryModule, viewModelModule))
+            modules(listOf(networkModule, repositoryModule, androidModule, viewModelModule))
         }
     }
 
@@ -26,21 +26,21 @@ class App : Application() {
 
         Timber.plant(Timber.DebugTree())
 
-        StrictMode.setThreadPolicy(
-            StrictMode.ThreadPolicy.Builder()
-                .detectDiskReads()
-                .detectDiskWrites()
-                .detectNetwork()
-                .penaltyLog()
-                .build()
-        )
-
-        StrictMode.setVmPolicy(
-            StrictMode.VmPolicy.Builder()
-                .detectLeakedSqlLiteObjects()
-                .detectLeakedClosableObjects()
-                .penaltyLog()
-                .build()
-        )
+//        StrictMode.setThreadPolicy(
+//            StrictMode.ThreadPolicy.Builder()
+//                .detectDiskReads()
+//                .detectDiskWrites()
+//                .detectNetwork()
+//                .penaltyLog()
+//                .build()
+//        )
+//
+//        StrictMode.setVmPolicy(
+//            StrictMode.VmPolicy.Builder()
+//                .detectLeakedSqlLiteObjects()
+//                .detectLeakedClosableObjects()
+//                .penaltyLog()
+//                .build()
+//        )
     }
 }

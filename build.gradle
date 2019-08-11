@@ -7,7 +7,7 @@ buildscript {
         kt = '1.3.41'
         appcompat = '1.0.2'
         coreKtx = '1.0.2'
-        materialComponents = '1.1.0-alpha08'
+        materialComponents = '1.1.0-alpha09'
         preferences = '1.1.0-rc01'
         navigation = '2.0.0'
         navigationSafeArgs = '2.1.0-beta02'
@@ -22,6 +22,7 @@ buildscript {
         moshiAdapters = '1.8.0'
         okhttpLogger = '3.12.1'
         picasso = '2.5.2'
+        picassoDownloader = '1.1.0'
         exoPlayer = '2.10.3'
         room = '2.2.0-alpha01'
 

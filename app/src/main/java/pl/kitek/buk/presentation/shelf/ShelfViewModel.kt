@@ -8,26 +8,30 @@ import pl.kitek.buk.common.addTo
 import pl.kitek.buk.common.viewModel.BaseViewModel
 import pl.kitek.buk.data.model.Book
 import pl.kitek.buk.data.repository.BookRepository
+import timber.log.Timber
 
 class ShelfViewModel(
     private val bookRepository: BookRepository
 ) : BaseViewModel() {
 
-    private val books: MutableLiveData<List<Book>> by lazy {
-        MutableLiveData<List<Book>>().also { loadBooks() }
-    }
+    private val books: MutableLiveData<List<Book>> = MutableLiveData()
 
     fun getBooks(): LiveData<List<Book>> = books
 
+    init {
+        loadBooks()
+    }
+
     private fun loadBooks() {
-        bookRepository.getBooks()
+        bookRepository.observeBooks()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ books ->
                 this.books.value = books.items
+            }, { err ->
+                Timber.tag("kitek").d("Books.error: $err ")
             }, {
-
+                Timber.tag("kitek").d("Books.complete ")
             }).addTo(disposable)
     }
-
 }

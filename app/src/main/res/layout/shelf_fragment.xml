@@ -8,6 +8,11 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shelfRv"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:clipToPadding="false"
         tools:listitem="@layout/shelf_item"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

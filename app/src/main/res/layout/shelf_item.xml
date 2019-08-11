@@ -3,6 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="RtlHardcoded"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -10,28 +12,29 @@
         android:id="@+id/bookItemImage"
         android:layout_width="128dp"
         android:layout_height="192dp"
+        android:layout_marginRight="8dp"
         android:scaleType="centerCrop"
         tools:src="@tools:sample/avatars"
         tools:ignore="ContentDescription"/>
 
     <TextView
-        android:id="@+id/bookItemTitle"
+        android:id="@+id/bookItemAuthor"
+        tools:text="@tools:sample/full_names"
+        android:textSize="14sp"
+        android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/bookItemImage"
-        android:layout_marginLeft="8dp"
-        android:textSize="20sp"
-        tools:text="Around the World in Eighty Days"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
     <TextView
-        android:id="@+id/bookItemAuthor"
-        tools:text="@tools:sample/full_names"
-        android:textSize="18sp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_below="@+id/bookItemTitle"
+        android:id="@+id/bookItemTitle"
         android:layout_toRightOf="@+id/bookItemImage"
+        android:layout_below="@+id/bookItemAuthor"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Around the World in Eighty Days"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
 
 </RelativeLayout>

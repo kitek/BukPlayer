@@ -2,9 +2,30 @@
 <androidx.preference.PreferenceScreen
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.preference.EditTextPreference
-        app:key="serverURL"
-        app:summary="@string/server_url_description"
-        app:title="@string/server_url"/>
+    <androidx.preference.PreferenceCategory
+        app:title="@string/audiobooks_collection">
+
+        <androidx.preference.EditTextPreference
+            app:key="@string/pref_server_url"
+            app:useSimpleSummaryProvider="true"
+            app:title="@string/server_url"/>
+
+        <androidx.preference.SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="@string/pref_auth_enabled"
+            app:title="@string/basic_auth"/>
+
+        <androidx.preference.EditTextPreference
+            app:key="@string/pref_auth_username"
+            app:dependency="@string/pref_auth_enabled"
+            app:useSimpleSummaryProvider="true"
+            app:title="@string/username"/>
+
+        <androidx.preference.EditTextPreference
+            app:key="@string/pref_auth_password"
+            app:dependency="@string/pref_auth_enabled"
+            app:title="@string/password"/>
+
+    </androidx.preference.PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

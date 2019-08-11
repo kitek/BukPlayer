@@ -59,7 +59,7 @@ async function getCoverPath(book, proposal) {
 
     try {
         const coverPath = proposal.find((item) => {
-            return item.coverPath.length > 0 && (item.title === book.title || item.author === book.author);
+            return item.coverPath.length > 0 && (item.title === book.title);
         }).coverPath || '';
 
         if(coverPath.length === 0) return '';

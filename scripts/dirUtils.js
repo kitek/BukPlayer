@@ -123,11 +123,12 @@ function walk(dir, filterExt = []) {
 
 function getDuration(files) {
     let duration = 0
-    for(let i = 0; i < files.length; i+=1) {
-        const file = files[i];
-        const buffer = fs.readFileSync(file);
-        duration += getMP3Duration(buffer) / 1000;
-    }
+// It takes too long on single thread
+//    for(let i = 0; i < files.length; i+=1) {
+//        const file = files[i];
+//        const buffer = fs.readFileSync(file);
+//        duration += getMP3Duration(buffer) / 1000;
+//    }
 
     return Math.round(duration);
 }

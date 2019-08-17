@@ -6,5 +6,6 @@ data class Book(
     val author: String,
     val path: String,
     val description: String,
-    val coverPath: String
+    val coverPath: String,
+    val durationInSeconds: Long
 )

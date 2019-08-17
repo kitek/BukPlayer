@@ -47,6 +47,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat"
     implementation "androidx.core:core-ktx:$coreKtx"
     implementation "com.google.android.material:material:$materialComponents"
+    implementation "com.android.support.constraint:constraint-layout:$constrainLayout"
     implementation "androidx.preference:preference-ktx:$preferences"
     implementation "android.arch.lifecycle:viewmodel:$viewModel"
     implementation "io.reactivex.rxjava2:rxandroid:$rxAndroid"

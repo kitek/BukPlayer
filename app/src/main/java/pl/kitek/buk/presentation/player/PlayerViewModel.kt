@@ -6,9 +6,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import pl.kitek.buk.common.addTo
 import pl.kitek.buk.common.viewModel.BaseViewModel
-import pl.kitek.buk.data.model.Book
+import pl.kitek.buk.data.model.BookState
 import pl.kitek.buk.data.repository.BookRepository
 import pl.kitek.buk.data.service.player.PlayerController
+import timber.log.Timber
 
 class PlayerViewModel(
     private val bookId: String,
@@ -16,38 +17,31 @@ class PlayerViewModel(
     private val playerController: PlayerController
 ) : BaseViewModel() {
 
-    private val playerState = MutableLiveData<PlayerState>()
-    private val book: MutableLiveData<Book> by lazy {
-        MutableLiveData<Book>().also { loadBook() }
+    private val bookStateLiveData = MutableLiveData<BookState>()
+
+    fun getBookState(): LiveData<BookState> = bookStateLiveData
+
+    init {
+        observeBookState()
     }
 
-    fun getBook(): LiveData<Book> = book
-    fun getPlayerState(): LiveData<PlayerState> = playerState
+    private fun observeBookState() {
+        bookRepository.observeBookState(bookId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ bookState ->
+                bookStateLiveData.value = bookState
+            }, {
+                Timber.tag("kitek").d("onError: $it")
+            }).addTo(disposable)
+    }
 
     fun play() {
         playerController.play(bookId)
-        playerState.value = PlayerState.Playing
     }
 
     fun pause() {
         playerController.pause()
-        playerState.value = PlayerState.Paused
-    }
-
-    fun stop() {
-        playerController.stop()
-        playerState.value = PlayerState.Stopped
-    }
-
-    private fun loadBook() {
-        bookRepository.getBook(bookId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ book ->
-                this.book.value = book
-            }, {
-                // TODO
-            }).addTo(disposable)
     }
 
 }

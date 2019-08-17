@@ -6,7 +6,9 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
+import io.reactivex.functions.Function3
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.BehaviorSubject
 import pl.kitek.buk.data.db.BookDao
 import pl.kitek.buk.data.model.*
 import pl.kitek.buk.data.service.BookRestServiceFactory
@@ -18,6 +20,75 @@ class InMemoryBookRepository(
 ) : BookRepository {
 
     private val bookFactory = BookFactory(settingsRepository)
+    private val defaultPlaybackState = Pair("", PlaybackState.Stopped)
+    private val defaultProgress = Pair("", CurrentProgress())
+
+    private val playbackSubject =
+        BehaviorSubject.createDefault<Pair<String, PlaybackState>>(defaultPlaybackState)
+    private val progressSubject =
+        BehaviorSubject.createDefault<Pair<String, CurrentProgress>>(defaultProgress)
+
+    override fun observeBookState(id: String): Observable<BookState> {
+        return Observable.combineLatest(
+            getBook(id).toObservable(),
+            observeBookPlaybackState(id),
+            observeBookProgress(id),
+
+            Function3 { book: Book, playbackState: PlaybackState, progress: CurrentProgress ->
+                BookState(
+                    book.id,
+                    book.title,
+                    book.coverPath,
+                    playbackState,
+                    progress
+                )
+            }
+        )
+    }
+
+    private fun observeBookPlaybackState(id: String): Observable<PlaybackState> {
+        return playbackSubject.map { (bookId, playbackState) ->
+            if (id == bookId) playbackState else PlaybackState.Stopped
+        }
+    }
+
+    private fun observeBookProgress(id: String): Observable<CurrentProgress> {
+        return progressSubject.flatMap { (bookId, progress) ->
+            if (id == bookId) Observable.just(progress)
+            else getBookCurrentProgress(id)
+        }
+    }
+
+    override fun updateBookProgress(
+        id: String,
+        playbackPosition: Long,
+        fileIndex: Int,
+        files: List<BookFile>,
+        totalDurationInSeconds: Long
+    ) {
+        if (files.isEmpty()) return
+        if (totalDurationInSeconds <= 0L) return
+
+        val progress = CurrentProgress.of(
+            playbackPosition, fileIndex, files, totalDurationInSeconds
+        )
+        progressSubject.onNext(Pair(id, progress))
+    }
+
+    private fun getBookCurrentProgress(id: String): Observable<CurrentProgress> {
+        return getBookDetails(id).toObservable().map { bookDetails ->
+            val playbackPosition = bookDetails.progress.playbackPosition
+            val fileIndex = bookDetails.progress.currentWindowIndex
+            val files = bookDetails.files.items
+            val totalDurationInSeconds = bookDetails.durationInSeconds
+
+            CurrentProgress.of(playbackPosition, fileIndex, files, totalDurationInSeconds)
+        }
+    }
+
+    override fun updateBookState(id: String, playbackState: PlaybackState) {
+        playbackSubject.onNext(Pair(id, playbackState))
+    }
 
     override fun observeBooks(): Observable<Page<Book>> {
         return settingsRepository.observeServerSettings()
@@ -34,7 +105,7 @@ class InMemoryBookRepository(
                     .onErrorResumeNext { _: Throwable -> Observable.empty() }
             }
             .flatMap { entities ->
-                bookFactory.mapToBooks(entities).toObservable()
+                bookFactory.updateBookPaths(entities).toObservable()
                     .onErrorResumeNext { _: Throwable -> Observable.empty() }
             }
     }
@@ -62,6 +133,7 @@ class InMemoryBookRepository(
                     book.description,
                     book.coverPath,
                     files,
+                    book.durationInSeconds,
                     progress
                 )
             }
@@ -71,20 +143,24 @@ class InMemoryBookRepository(
     override fun getBooks(): Single<Page<Book>> {
         return bookServiceFactory.create()
             .flatMap { service -> service.getBooks() }
-            .flatMap { entities -> bookFactory.mapToBooks(entities) }
+            .flatMap { entities -> bookFactory.updateBookPaths(entities) }
     }
 
     override fun getBookFiles(path: String): Single<Page<BookFile>> {
         return bookServiceFactory.create()
             .flatMap { service -> service.getBookFiles(path) }
-            .flatMap { entities -> bookFactory.mapToBookFiles(entities) }
+            .flatMap { entities -> bookFactory.updateBookFilePaths(entities) }
     }
 
     override fun getProgress(bookId: String): Maybe<BookProgress> {
         return bookDao.getProgress(bookId)
     }
 
-    override fun setProgress(bookId: String, playbackPosition: Long, currentWindowIndex: Int): Completable {
+    override fun setProgress(
+        bookId: String,
+        playbackPosition: Long,
+        currentWindowIndex: Int
+    ): Completable {
         return bookDao.saveProgress(BookProgress(bookId, playbackPosition, currentWindowIndex))
     }
 }

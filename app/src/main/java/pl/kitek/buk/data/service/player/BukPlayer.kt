@@ -14,6 +14,7 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -22,10 +23,10 @@ import pl.kitek.buk.common.NotificationHelper
 import pl.kitek.buk.common.OkHttpClientFactory
 import pl.kitek.buk.common.addTo
 import pl.kitek.buk.data.model.BookDetails
-import pl.kitek.buk.data.model.BookFile
-import pl.kitek.buk.data.model.Page
+import pl.kitek.buk.data.model.PlaybackState
 import pl.kitek.buk.data.repository.BookRepository
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 class BukPlayer(
     private val context: Context,
@@ -35,11 +36,22 @@ class BukPlayer(
 
     private var player: SimpleExoPlayer? = null
     private var dataSourceFactory: DefaultDataSourceFactory? = null
-    private var bookFiles: Page<BookFile>? = null
+    private val extractorsFactory =
+        DefaultExtractorsFactory().setConstantBitrateSeekingEnabled(true)
+
+    private var playbackProgress = Observable.interval(1L, TimeUnit.SECONDS)
+        .subscribeOn(AndroidSchedulers.mainThread())
+        .observeOn(AndroidSchedulers.mainThread())
+        .flatMap {
+            val currentPosition = player?.currentPosition ?: 0L
+            val currentWindow = player?.currentWindowIndex ?: 0
+
+            Observable.just(Pair(currentPosition, currentWindow))
+        }
+
     private var currentBookId: String = ""
-    private var playbackPosition: Long = 0
-    private var windowIndex: Int = 0
-    private val extractorsFactory = DefaultExtractorsFactory().setConstantBitrateSeekingEnabled(true)
+    private var playbackDisposable = CompositeDisposable()
+    private var bookDetails: BookDetails? = null
     private lateinit var disposable: CompositeDisposable
 
     fun onCreate() {
@@ -51,70 +63,86 @@ class BukPlayer(
     fun startPlaying(bookId: String, service: Service) {
         if (bookId.isEmpty()) return
 
-        if (bookId == currentBookId) {
-            player?.playWhenReady = true
-            return
+        if (currentBookId.isNotEmpty() && currentBookId != bookId) {
+            stopPlayback(currentBookId)
         }
-
-        loadBook(bookId, service)
+        if (currentBookId == bookId) {
+            resumePlayback(bookId)
+        } else {
+            startPlayback(bookId, service)
+        }
+        currentBookId = bookId
     }
 
-    private fun loadBook(bookId: String, service: Service) {
+    private fun resumePlayback(bookId: String) {
+        bookRepository.updateBookState(bookId, PlaybackState.Playing)
+        player?.playWhenReady = true
+        startObserveProgress()
+    }
+
+    private fun startPlayback(bookId: String, service: Service) {
         bookRepository.getBookDetails(bookId)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ bookDetails: BookDetails ->
-                bookFiles = bookDetails.files
-                currentBookId = bookDetails.id
-                playbackPosition = bookDetails.progress.playbackPosition
-                windowIndex = bookDetails.progress.currentWindowIndex
+            .subscribe({ details: BookDetails ->
 
-                showNotification(bookId, bookDetails.author, bookDetails.title, service)
-                startPlayback(bookDetails.files, windowIndex, playbackPosition)
+                bookDetails = details
+                showNotification(bookId, details.author, details.title, service)
+                bookRepository.updateBookState(bookId, PlaybackState.Playing)
+
+                val sources: Array<MediaSource> = details.files.items.map { file ->
+                    Uri.parse(file.path)
+                }.map { uri ->
+                    ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
+                        .createMediaSource(uri)
+                }.toTypedArray()
+
+                val mediaSource = ConcatenatingMediaSource(*sources)
+                player?.prepare(mediaSource)
+                player?.playWhenReady = true
+                player?.seekTo(
+                    details.progress.currentWindowIndex,
+                    details.progress.playbackPosition
+                )
+
+                startObserveProgress()
 
             }, { e: Throwable ->
-                Timber.tag("BukPlayer").e("PlayerService error: $e ")
+                Timber.tag("BukPlayer").e(e)
             }).addTo(disposable)
     }
 
-    private fun startPlayback(
-        files: Page<BookFile>,
-        windowIndex: Int,
-        playbackPosition: Long
-    ) {
-        val sources: Array<MediaSource> = files.items.map { file ->
-            Uri.parse(file.path)
-        }.map { uri ->
-            ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory).createMediaSource(uri)
-        }.toTypedArray()
+    private fun stopPlayback(bookId: String) {
+        if (bookId.isEmpty()) return
 
-        val mediaSource = ConcatenatingMediaSource(*sources)
-        player?.prepare(mediaSource)
-        player?.playWhenReady = true
-        player?.seekTo(windowIndex, playbackPosition)
+        player?.playWhenReady = false
+        bookRepository.updateBookState(bookId, PlaybackState.Stopped)
+        saveProgress()
+        stopObserveProgress()
     }
 
-    private fun showNotification(bookId: String, author: String, title: String, service: Service) {
-        val notification = NotificationHelper.createPlayerNotification(context, bookId, title, author)
-        service.startForeground(1, notification)
+    private fun pausePlayback(bookId: String) {
+        if (bookId.isEmpty()) return
+
+        player?.playWhenReady = false
+        bookRepository.updateBookState(currentBookId, PlaybackState.Paused)
+        saveProgress()
+        stopObserveProgress()
     }
 
     fun pausePlaying() {
-        player?.playWhenReady = false
-
-        playbackPosition = player?.currentPosition ?: 0L
-        windowIndex = player?.currentWindowIndex ?: 0
-        saveProgress()
+        pausePlayback(currentBookId)
     }
 
     fun stopPlaying(service: Service) {
+        stopPlayback(currentBookId)
+
         service.stopForeground(true)
         service.stopSelf()
     }
 
     fun onDestroy() {
         isRunning = false
-        saveProgress()
         releasePlayer()
         disposable.dispose()
     }
@@ -139,8 +167,9 @@ class BukPlayer(
         player?.release()
         player = null
         dataSourceFactory = null
+        bookDetails = null
+
         currentBookId = ""
-        bookFiles = null
     }
 
     private fun setupPlayer() {
@@ -151,6 +180,34 @@ class BukPlayer(
         dataSourceFactory = DefaultDataSourceFactory(
             context, null, OkHttpDataSourceFactory(httpClientFactory.client, userAgent)
         )
+    }
+
+    private fun showNotification(bookId: String, author: String, title: String, service: Service) {
+        val notification =
+            NotificationHelper.createPlayerNotification(context, bookId, title, author)
+        service.startForeground(1, notification)
+    }
+
+    private fun startObserveProgress() {
+        playbackProgress.subscribe({ (currentPosition, currentWindow) ->
+            val files = bookDetails?.files?.items ?: emptyList()
+            val totalDuration = bookDetails?.durationInSeconds ?: 0L
+
+            bookRepository.updateBookProgress(
+                currentBookId,
+                currentPosition,
+                currentWindow,
+                files,
+                totalDuration
+            )
+        }, { e ->
+            Timber.tag("BukPlayer").d(e)
+        }).addTo(playbackDisposable)
+    }
+
+    private fun stopObserveProgress() {
+        playbackDisposable.clear()
+        playbackDisposable = CompositeDisposable()
     }
 
     companion object {

@@ -36,7 +36,7 @@ class ShelfFragment : Fragment(), ShelfAdapter.OnBookClickListener {
     }
 
     override fun onBookClick(book: Book) {
-        val action = ShelfFragmentDirections.actionShelfFragmentToPlayerFragment(book.id)
+        val action = ShelfFragmentDirections.actionShelfFragmentToPlayerFragment(book.id, book.title)
         findNavController().navigate(action)
     }
 

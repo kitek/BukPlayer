@@ -22,3 +22,4 @@ fun <T> Observable<T>.startWithIfEmpty(subject: BehaviorSubject<T>, default: Obs
         if (subject.hasValue()) Observable.empty<T>() else default
     })
 }
+

@@ -1,10 +1,10 @@
 const rp = require('request-promise');
 const $ = require('cheerio');
 
-module.exports = (query) => {
+module.exports = (query, limit = 2) => {
     const url = 'http://bookto.pl/szukaj/' + encodeURIComponent(query);
     return rp(url).then((html) => {
-        const results = $('div[itemtype="http://schema.org/Book"]', html);
+        const results = $('div[itemtype="http://schema.org/Book"]', html).slice(0, limit) || [];
         let books = [];
 
         results.each((index) => {

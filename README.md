@@ -9,7 +9,7 @@ The idea for the BukPlayer is to give you the ability to listen to your private 
 
 Steps: 
 1. Put your audiobooks in some folder 
-2. Execute the [script](tree/master/scripts) which generates required JSON files
+2. Execute the [script](scripts) which generates required JSON files
 3. Upload your files to some web server / online storage
 4. Install BukPlayer app and enter URL to your files
 5. Listen and have fun with your audiobook collection

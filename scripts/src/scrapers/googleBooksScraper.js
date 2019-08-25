@@ -10,7 +10,7 @@ module.exports = (query, limit = 2) => {
         results.forEach((element) => {
             const coverPath = getThumbnail(element);
             const title = element.volumeInfo.title || '';
-            const author = element.volumeInfo.authors[0] || '';
+            const author = (element.volumeInfo.authors || [])[0] || '';
             const description = element.volumeInfo.description || '';
 
             books.push({ title, coverPath, author, description });

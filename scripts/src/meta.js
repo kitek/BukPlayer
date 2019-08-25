@@ -4,39 +4,46 @@ const bookToScraper = require('./scrapers/bookToScraper.js');
 const googleBooksScraper = require('./scrapers/googleBooksScraper.js');
 const clear = require('clear');
 const download = require('image-downloader');
+const { coverExtensions } = require('./constants.js');
 
-module.exports.findMeta = async (books) => {
-    const size = (books || []).length;
+module.exports = {
 
-    console.log('Found ' + size + ' new books.')
+    findBookMeta : async (bookFile) => {
+        const query = bookFile.path.replace('-', '').replace('  ', ' ').trim();
 
-    for(let i = 0; i < size; i+=1) {
-        const book = books[i];
-        const query = book.path;
-        const results = await Promise.all([
+        const meta = await Promise.all([
             bookToScraper(query),
             googleBooksScraper(query)
         ]);
+        const results = meta.filter((proposal) => {
+            return Array.isArray(proposal) && proposal.length > 0;
+        });
         const proposal = [].concat.apply([], results);
 
-        clear();
-        console.log('[' + (i + 1) + '/' + books.length + '] Directory: "' + query + '"');
+        if(bookFile.coverPath.length > 0) {
+            proposal.unshift({
+                coverPath: bookFile.path + path.sep + bookFile.coverPath
+            });
+        }
 
-        book.author = ask(proposal, 'author');
+        return proposal;
+    },
 
-        clear();
-        console.log('[' + (i + 1) + '/' + books.length + '] Directory: "' + query + '"');
+    findBookCover: async (bookInfo) => {
+        const isRemoteCover = bookInfo.coverPath.startsWith("http://") || bookInfo.coverPath.startsWith("https://")
+        if(!isRemoteCover) return bookInfo.coverPath;
 
-        book.title = ask(proposal, 'title');
+        const coverSourcePath = bookInfo.coverPath;
+        const coverDestPath = bookInfo.path + path.sep + 'cover.jpg';
+        const options = {
+            url: coverSourcePath,
+            dest: coverDestPath
+        };
 
-        clear();
-        console.log('[' + (i + 1) + '/' + books.length + '] Directory: "' + query + '"');
+        await download.image(options);
 
-        book.description = ask(proposal, 'description');
-        book.coverPath = await getCoverPath(book, proposal);
+        return coverDestPath;
     }
-
-    return books;
 
 };
 

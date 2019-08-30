@@ -1,27 +1,31 @@
 package pl.kitek.buk.data.repository
 
 import io.reactivex.Single
-import pl.kitek.buk.data.model.*
+import pl.kitek.buk.data.model.Book
+import pl.kitek.buk.data.model.BookFile
+import pl.kitek.buk.data.model.Page
 
 class BookFactory(private val settingsRepository: SettingsRepository) {
 
-    fun mapToBooks(entities: Page<BookEntity>): Single<Page<Book>> {
+    fun updateBookPaths(entities: Page<Book>): Single<Page<Book>> {
         return settingsRepository.getServerSettings().map { settings ->
-            val books = entities.items.map { entity ->
-                val path = createAbsoluteUrl(entity.path, settings.url)
-                val coverPath = createAbsoluteUrl(entity.coverPath, settings.url)
-
-                Book(entity.id, entity.title, entity.author, path, entity.description, coverPath)
+            val books = entities.items.map { book ->
+                book.copy(
+                    path = createAbsoluteUrl(book.path, settings.url),
+                    coverPath = createAbsoluteUrl(book.coverPath, settings.url)
+                )
             }
 
             Page(entities.metadata, books)
         }
     }
 
-    fun mapToBookFiles(entities: Page<BookFileEntity>): Single<Page<BookFile>> {
+    fun updateBookFilePaths(entities: Page<BookFile>): Single<Page<BookFile>> {
         return settingsRepository.getServerSettings().map { settings ->
-            val files = entities.items.map { entity ->
-                BookFile(createAbsoluteUrl(entity.path, settings.url))
+            val files = entities.items.map { bookFile ->
+                bookFile.copy(
+                    path = createAbsoluteUrl(bookFile.path, settings.url)
+                )
             }
 
             Page(entities.metadata, files)

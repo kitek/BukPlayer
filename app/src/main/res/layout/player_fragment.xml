@@ -1,36 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/playBtn"
-        android:text="@string/play"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/pauseBtn"
-        android:text="@string/pause"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/stopBtn"
-        android:text="@string/stop"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <ImageView
+        android:id="@+id/bookCoverImageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="48dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/audiobooks_collection"
+        android:scaleType="fitCenter"
+        app:layout_constraintDimensionRatio="3:4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@tools:sample/avatars" />
 
     <TextView
-        android:id="@+id/playerStateTxt"
-        tools:text="Playing..."
+        android:id="@+id/bookProgressTextView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bookCoverImageView"
+        tools:text="0% complete - 8h 15m left" />
 
-</LinearLayout>
+    <FrameLayout
+        android:id="@+id/playbackContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bookProgressTextView">
+
+        <ImageView
+            android:id="@+id/playBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/play"
+            android:focusable="true"
+            android:src="@drawable/ic_play_circle_filled"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/pauseBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/pause"
+            android:focusable="true"
+            android:src="@drawable/ic_pause_circle_filled"
+            android:visibility="gone"
+            tools:visibility="gone" />
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/replay15Btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/forward_15"
+        android:focusable="true"
+        android:src="@drawable/ic_replay_15"
+        app:layout_constraintBottom_toBottomOf="@+id/playbackContainer"
+        app:layout_constraintEnd_toStartOf="@+id/playbackContainer"
+        app:layout_constraintTop_toTopOf="@+id/playbackContainer" />
+
+    <ImageView
+        android:id="@+id/forward15Btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/forward_15"
+        android:focusable="true"
+        android:src="@drawable/ic_forward_15"
+        app:layout_constraintBottom_toBottomOf="@+id/playbackContainer"
+        app:layout_constraintStart_toEndOf="@+id/playbackContainer"
+        app:layout_constraintTop_toTopOf="@+id/playbackContainer" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

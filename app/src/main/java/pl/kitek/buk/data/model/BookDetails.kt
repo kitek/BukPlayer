@@ -8,5 +8,6 @@ data class BookDetails(
     val description: String,
     val coverPath: String,
     val files: Page<BookFile>,
+    val durationInSeconds: Long,
     val progress: BookProgress
 )

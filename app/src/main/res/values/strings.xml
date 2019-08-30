@@ -13,9 +13,13 @@
     <string name="password">Password</string>
     <string name="basic_auth">Basic Auth</string>
     <string name="audiobooks_collection">Audiobooks collection</string>
-
+    <string name="replay_15">Replay 15 seconds</string>
+    <string name="forward_15">Forward 15 seconds</string>
+    <string name="player_progress">%1$d %% complete - %2$s left</string>
     <string name="pref_server_url">serverURL</string>
     <string name="pref_auth_enabled">isBasicAuthEnabled</string>
     <string name="pref_auth_username">basicAuthUsername</string>
     <string name="pref_auth_password">basicAuthPassword</string>
+    <string name="complete">complete</string>
+    <string name="left">left</string>
 </resources>

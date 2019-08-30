@@ -24,6 +24,7 @@
         android:name="pl.kitek.buk.presentation.player.PlayerFragment">
 
         <argument android:name="bookId" app:argType="string"/>
+        <argument android:name="bookTitle" app:argType="string"/>
 
     </fragment>
 

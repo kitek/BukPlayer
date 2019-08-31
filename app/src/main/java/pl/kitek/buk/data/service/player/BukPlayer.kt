@@ -78,6 +78,13 @@ class BukPlayer(
         bookRepository.updateBookState(bookId, PlaybackState.Playing)
         player?.playWhenReady = true
         startObserveProgress()
+
+        bookDetails?.let { details ->
+            val config = NotificationHelper.NotificationConfig.of(
+                context, details, PlaybackState.Playing
+            )
+            NotificationHelper.updatePlayerNotification(config)
+        }
     }
 
     private fun startPlayback(bookId: String, service: Service) {
@@ -85,9 +92,16 @@ class BukPlayer(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ details: BookDetails ->
-
                 bookDetails = details
-                showNotification(bookId, details.author, details.title, service)
+
+                startForegroundService(
+                    bookId,
+                    details.author,
+                    details.title,
+                    details.coverPath,
+                    service
+                )
+
                 bookRepository.updateBookState(bookId, PlaybackState.Playing)
 
                 val sources: Array<MediaSource> = details.files.items.map { file ->
@@ -104,7 +118,6 @@ class BukPlayer(
                     details.progress.currentWindowIndex,
                     details.progress.playbackPosition
                 )
-
                 startObserveProgress()
 
             }, { e: Throwable ->
@@ -128,6 +141,13 @@ class BukPlayer(
         bookRepository.updateBookState(currentBookId, PlaybackState.Paused)
         saveProgress()
         stopObserveProgress()
+
+        bookDetails?.let { details ->
+            val config = NotificationHelper.NotificationConfig.of(
+                context, details, PlaybackState.Paused
+            )
+            NotificationHelper.updatePlayerNotification(config)
+        }
     }
 
     fun pausePlaying() {
@@ -182,10 +202,19 @@ class BukPlayer(
         )
     }
 
-    private fun showNotification(bookId: String, author: String, title: String, service: Service) {
-        val notification =
-            NotificationHelper.createPlayerNotification(context, bookId, title, author)
-        service.startForeground(1, notification)
+    private fun startForegroundService(
+        bookId: String, author: String, title: String, coverPath: String, service: Service
+    ) {
+        val config = NotificationHelper.NotificationConfig(
+            context,
+            bookId,
+            title,
+            author,
+            coverPath,
+            PlaybackState.Playing
+        )
+        val notification = NotificationHelper.createPlayerNotification(config)
+        service.startForeground(NotificationHelper.NOTIFICATION_ID, notification)
     }
 
     private fun startObserveProgress() {

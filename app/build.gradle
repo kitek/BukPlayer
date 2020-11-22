@@ -72,6 +72,7 @@ dependencies {
     implementation "com.jakewharton.timber:timber:$timber"
 
     testImplementation "junit:junit:$junit"
+    testImplementation "org.robolectric:robolectric:$robolectric"
 
     androidTestImplementation "androidx.room:room-testing:$room"
     androidTestImplementation "androidx.test:runner:$uiTestRunner"

@@ -6,6 +6,7 @@
     <string name="service_description">Allows playing music when the application is in the background</string>
     <string name="channel_name">Player notification channel</string>
     <string name="channel_description">Channel for player notifications</string>
+    <string name="invalid_url_error">Your URL was incorrect! Reverting settings.</string>
     <string name="play">Play</string>
     <string name="stop">Stop</string>
     <string name="pause">Pause</string>

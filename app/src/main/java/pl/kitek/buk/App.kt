@@ -4,6 +4,7 @@ import android.app.Application
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import pl.kitek.buk.common.di.androidModule
+import pl.kitek.buk.common.di.commonModule
 import pl.kitek.buk.common.di.networkModule
 import pl.kitek.buk.common.di.repositoryModule
 import pl.kitek.buk.common.di.viewModelModule
@@ -17,7 +18,13 @@ class App : Application() {
         enableDebug()
         startKoin {
             androidContext(this@App)
-            modules(listOf(networkModule, repositoryModule, androidModule, viewModelModule))
+            modules(listOf(
+                commonModule,
+                networkModule,
+                repositoryModule,
+                androidModule,
+                viewModelModule
+            ))
         }
     }
 
